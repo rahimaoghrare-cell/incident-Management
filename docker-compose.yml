@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  # ===== OLLAMA (LLM Local) =====
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - incidents-network
 
   # ===== BASE DE DONNEES (PostgreSQL — cahier des charges) =====
   postgres:
@@ -200,3 +210,4 @@ networks:
 volumes:
   postgres_data:
   minio_data:
+  ollama-data:
