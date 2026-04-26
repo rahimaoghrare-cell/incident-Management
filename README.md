@@ -58,7 +58,7 @@ incident-management/
 ├── .env.example
 └── README.md
 ## 🔀 Workflow Git
-## 🔀 Workflow Git
+
 
 ```bash
 # Chaque membre travaille sur sa branche

@@ -1,0 +1,22 @@
+server:
+  port: 8084
+
+spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/chatbot_db
+
+  # Désactiver Eureka en local
+eureka:
+  client:
+    enabled: false
+
+incident:
+  service:
+    url: http://localhost:8082
