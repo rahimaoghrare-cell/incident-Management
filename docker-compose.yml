@@ -88,11 +88,11 @@ services:
     networks:
       - incidents-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      test: [ "CMD", "java", "-version" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   # ===== TON SERVICE 2 : CONFIG SERVER =====
   config-server:
@@ -108,11 +108,11 @@ services:
       # On force Spring à regarder dans le dossier qu'on vient de monter
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: file:///app/config-repo
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q --spider http://localhost:8888/actuator/health || exit 1" ]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      test: [ "CMD", "java", "-version" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     networks:
       - incidents-network
 
@@ -134,56 +134,57 @@ services:
       - incidents-network
 
   # ===== PERSONNE 2 : AUTH SERVICE =====
-  #  auth-service:
-  #    build: ./auth-service
-  #    container_name: auth-service
-  #    ports:
-  #      - "8081:8081"
-  #    environment:
-  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-  #      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/users_db
-  #      KEYCLOAK_URL: http://keycloak:8080
-  #    depends_on:
-  #      - postgres
-  #      - keycloak
-  #      - eureka-server
-  #      - config-server
-  #    networks:
-  #      - incidents-network
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/incident-mgmt
+    depends_on:
+      - postgres
+      - keycloak
+      - eureka-server
+    networks:
+      - incidents-network
 
   # ===== PERSONNE 3 : INCIDENT SERVICE =====
-  #  incident-service:
-  #    build: ./incident-service
-  #    container_name: incident-service
-  #    ports:
-  #      - "8082:8082"
-  #    environment:
-  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-  #      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/incidents_db
-  #    depends_on:
-  #      - postgres
-  #      - eureka-server
-  #      - config-server
-  #    networks:
-  #      - incidents-network
-  # ===== PERSONNE 3 : COMMENT SERVICE =====
-  #  comment-service:
-  #    build: ./incident-service
-  #    container_name: comment-service
-  #    ports:
-  #      - "8083:8083"
-  #    environment:
-  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/comments_db
-  #    depends_on:
-  #      - postgres
-  #      - eureka-server
-  #    networks:
-  #      - incidents-network
+  incident-service:
+    build: ./incident-service
+    container_name: incident-service
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/incident_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+    depends_on:
+      - postgres
+      - eureka-server
+    networks:
+      - incidents-network
 
-
+  comment-service:
+    build: ./comment-service
+    container_name: comment-service
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/comments_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+    depends_on:
+      - postgres
+      - eureka-server
+    networks:
+      - incidents-network
   # ===== PERSONNE 4 : CHATBOT SERVICE =====
   chatbot-service:
     build: ./chatbot-service
@@ -202,18 +203,15 @@ services:
       - incidents-network
 
   # ===== PERSONNE 5 : FRONTEND REACT =====
-  #  frontend:
-  #    build: ./frontend
-  #    container_name: frontend
-  #    ports:
-  #      - "3000:3000"
-  #    environment:
-  #      REACT_APP_API_URL: http://localhost:8080
-  #    depends_on:
-  #      - gateway
-  #    networks:
-  #      - incidents-network
-
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway
+    networks:
+      - incidents-network
 
 networks:
   incidents-network:

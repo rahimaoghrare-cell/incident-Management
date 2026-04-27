@@ -4,3 +4,4 @@ CREATE DATABASE incidents_db;
 CREATE DATABASE comments_db;
 CREATE DATABASE chat_db;
 CREATE DATABASE keycloak_db;
+CREATE DATABASE authdb;
