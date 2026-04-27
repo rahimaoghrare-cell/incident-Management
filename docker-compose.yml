@@ -12,6 +12,17 @@ services:
     networks:
       - incidents-network
 
+  # ===== MongoDB =====
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - incidents-network
+
   # ===== BASE DE DONNEES (PostgreSQL — cahier des charges) =====
   postgres:
     image: postgres:15-alpine
@@ -123,55 +134,55 @@ services:
       - incidents-network
 
   # ===== PERSONNE 2 : AUTH SERVICE =====
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    ports:
-      - "8081:8081"
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/users_db
-      KEYCLOAK_URL: http://keycloak:8080
-    depends_on:
-      - postgres
-      - keycloak
-      - eureka-server
-      - config-server
-    networks:
-      - incidents-network
+  #  auth-service:
+  #    build: ./auth-service
+  #    container_name: auth-service
+  #    ports:
+  #      - "8081:8081"
+  #    environment:
+  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+  #      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/users_db
+  #      KEYCLOAK_URL: http://keycloak:8080
+  #    depends_on:
+  #      - postgres
+  #      - keycloak
+  #      - eureka-server
+  #      - config-server
+  #    networks:
+  #      - incidents-network
 
   # ===== PERSONNE 3 : INCIDENT SERVICE =====
-  incident-service:
-    build: ./incident-service
-    container_name: incident-service
-    ports:
-      - "8082:8082"
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/incidents_db
-    depends_on:
-      - postgres
-      - eureka-server
-      - config-server
-    networks:
-      - incidents-network
-
+  #  incident-service:
+  #    build: ./incident-service
+  #    container_name: incident-service
+  #    ports:
+  #      - "8082:8082"
+  #    environment:
+  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+  #      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/incidents_db
+  #    depends_on:
+  #      - postgres
+  #      - eureka-server
+  #      - config-server
+  #    networks:
+  #      - incidents-network
   # ===== PERSONNE 3 : COMMENT SERVICE =====
-  comment-service:
-    build: ./incident-service
-    container_name: comment-service
-    ports:
-      - "8083:8083"
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/comments_db
-    depends_on:
-      - postgres
-      - eureka-server
-    networks:
-      - incidents-network
+  #  comment-service:
+  #    build: ./incident-service
+  #    container_name: comment-service
+  #    ports:
+  #      - "8083:8083"
+  #    environment:
+  #      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/comments_db
+  #    depends_on:
+  #      - postgres
+  #      - eureka-server
+  #    networks:
+  #      - incidents-network
+
 
   # ===== PERSONNE 4 : CHATBOT SERVICE =====
   chatbot-service:
@@ -181,27 +192,28 @@ services:
       - "8084:8084"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chat_db
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/chatbot_db
+      SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
     depends_on:
-      - postgres
+      - mongodb
+      - ollama
       - eureka-server
-      - incident-service
     networks:
       - incidents-network
 
   # ===== PERSONNE 5 : FRONTEND REACT =====
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "3000:3000"
-    environment:
-      REACT_APP_API_URL: http://localhost:8080
-    depends_on:
-      - gateway
-    networks:
-      - incidents-network
+  #  frontend:
+  #    build: ./frontend
+  #    container_name: frontend
+  #    ports:
+  #      - "3000:3000"
+  #    environment:
+  #      REACT_APP_API_URL: http://localhost:8080
+  #    depends_on:
+  #      - gateway
+  #    networks:
+  #      - incidents-network
+
 
 networks:
   incidents-network:
@@ -211,3 +223,4 @@ volumes:
   postgres_data:
   minio_data:
   ollama-data:
+  mongodb_data:    # ← ajoute cette ligne
